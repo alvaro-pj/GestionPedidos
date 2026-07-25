@@ -1,7 +1,25 @@
 ﻿@page "/"
+@rendermode InteractiveServer
 
 <PageTitle>Home</PageTitle>
 
-<h1>Hello, world!</h1>
+<MudText Typo="Typo.h3" GutterBottom="true">Bienvenido</MudText>
+<MudText Class="mb-4">Prueba de MudBlazor funcionando.</MudText>
 
-Welcome to your new app.
+<MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="Saludar">
+    Salúdame
+</MudButton>
+
+@if (!string.IsNullOrEmpty(mensaje))
+{
+    <MudAlert Severity="Severity.Success" Class="mt-4">@mensaje</MudAlert>
+}
+
+@code {
+    private string mensaje = "";
+
+    private void Saludar()
+    {
+        mensaje = $"¡Hola, Álvaro! Son las {DateTime.Now:HH:mm:ss}";
+    }
+}
