@@ -1,5 +1,6 @@
 using GestionPedidos.Components;
 using GestionPedidos.Data;
+using GestionPedidos.Models;
 using Microsoft.EntityFrameworkCore;
 using MudBlazor.Services;
 
@@ -14,6 +15,48 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 var app = builder.Build();
+
+// Aplicar migraciones y datos de prueba al arrancar
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    db.Database.Migrate();
+
+    if (!db.Clientes.Any())
+    {
+        db.Clientes.AddRange(
+            new Cliente
+            {
+                Nombre = "OSLO",
+                Tipo = TipoCliente.Empresa,
+                Cif = "B12345678",
+                Telefono = "947123456",
+                Email = "info@oslo.com",
+                Direccion = "Calle Mayor 10",
+                Poblacion = "Burgos"
+            },
+            new Cliente
+            {
+                Nombre = "LA VARGA",
+                Tipo = TipoCliente.Empresa,
+                Cif = "B87654321",
+                Telefono = "947654321",
+                Direccion = "Avenida del Cid 25",
+                Poblacion = "Burgos"
+            },
+            new Cliente
+            {
+                Nombre = "María Fernández",
+                Tipo = TipoCliente.Particular,
+                Cif = "12345678A",
+                Telefono = "666111222",
+                Email = "maria@ejemplo.com",
+                Poblacion = "Burgos"
+            }
+        );
+        db.SaveChanges();
+    }
+}
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
