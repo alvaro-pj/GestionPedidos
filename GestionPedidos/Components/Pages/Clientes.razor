@@ -3,7 +3,8 @@
 @using GestionPedidos.Data
 @using GestionPedidos.Models
 @using Microsoft.EntityFrameworkCore
-@inject AppDbContext Db
+@using GestionPedidos.Services
+@inject ClienteService ClienteSvc
 
 <PageTitle>Clientes</PageTitle>
 
@@ -19,7 +20,7 @@ else if (!clientes.Any())
 }
 else
 {
-    <MudTable Items="clientes" Hover="true" Striped="true">
+    <MudTable Items="clientes" Context="cliente" Hover="true" Striped="true">
         <HeaderContent>
             <MudTh>Nombre</MudTh>
             <MudTh>Tipo</MudTh>
@@ -28,11 +29,11 @@ else
             <MudTh>Población</MudTh>
         </HeaderContent>
         <RowTemplate>
-            <MudTd DataLabel="Nombre">@context.Nombre</MudTd>
-            <MudTd DataLabel="Tipo">@context.Tipo</MudTd>
-            <MudTd DataLabel="CIF/DNI">@context.Cif</MudTd>
-            <MudTd DataLabel="Teléfono">@context.Telefono</MudTd>
-            <MudTd DataLabel="Población">@context.Poblacion</MudTd>
+            <MudTd DataLabel="Nombre">@cliente.Nombre</MudTd>
+            <MudTd DataLabel="Tipo">@cliente.Tipo</MudTd>
+            <MudTd DataLabel="CIF/DNI">@cliente.Cif</MudTd>
+            <MudTd DataLabel="Teléfono">@cliente.Telefono</MudTd>
+            <MudTd DataLabel="Población">@cliente.Poblacion</MudTd>
         </RowTemplate>
     </MudTable>
 }
@@ -42,8 +43,6 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        clientes = await Db.Clientes
-            .OrderBy(c => c.Nombre)
-            .ToListAsync();
+        clientes = await ClienteSvc.ObtenerActivosAsync();
     }
 }

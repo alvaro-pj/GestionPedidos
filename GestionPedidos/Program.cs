@@ -1,6 +1,7 @@
 using GestionPedidos.Components;
 using GestionPedidos.Data;
 using GestionPedidos.Models;
+using GestionPedidos.Services;
 using Microsoft.EntityFrameworkCore;
 using MudBlazor.Services;
 
@@ -13,6 +14,8 @@ builder.Services.AddMudServices();
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddScoped<ClienteService>();
 
 var app = builder.Build();
 
