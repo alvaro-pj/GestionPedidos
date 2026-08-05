@@ -1,5 +1,4 @@
 ﻿@page "/clientes" 
-@rendermode InteractiveServer
 @using GestionPedidos.Data
 @using GestionPedidos.Models
 @using Microsoft.EntityFrameworkCore
@@ -9,6 +8,14 @@
 <PageTitle>Clientes</PageTitle>
 
 <MudText Typo="Typo.h4" GutterBottom="true">Clientes</MudText>
+
+<MudButton Variant="Variant.Filled" 
+           Color="Color.Primary"
+           StartIcon="@Icons.Material.Filled.Add"
+           Href="/clientes/nuevo"
+           Class="mb-4">
+    Nuevo cliente
+</MudButton>
 
 @if (clientes == null)
 {

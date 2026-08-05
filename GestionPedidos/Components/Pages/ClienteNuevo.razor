@@ -1,0 +1,99 @@
+﻿@page "/clientes/nuevo"
+@using GestionPedidos.Models
+@using GestionPedidos.Services
+@using System.ComponentModel.DataAnnotations
+@inject ClienteService ClienteSvc
+@inject NavigationManager Nav
+@inject ISnackbar Snackbar
+
+<PageTitle>Nuevo Cliente</PageTitle>
+
+<MudText Typo="Typo.h4" GutterBottom="true">Nuevo Cliente</MudText>
+
+<EditForm Model="cliente" OnValidSubmit="GuardarAsync">
+	<DataAnnotationsValidator />
+
+	<MudGrid>
+		<MudItem xs="12" md="8">
+			<MudTextField @bind-Value="cliente.Nombre"
+						  Label="Nombre"
+						  Required="true"
+						  For="@(() => cliente.Nombre)" />
+		</MudItem>
+
+		<MudItem xs="12" md="4">
+			<MudSelect T="TipoCliente"
+					   @bind-Value="cliente.Tipo"
+					   Label="Tipo">
+				<MudSelectItem Value="TipoCliente.Empresa">Empresa</MudSelectItem>
+				<MudSelectItem Value="TipoCliente.Particular">Particular</MudSelectItem>
+			</MudSelect>
+		</MudItem>
+
+		<MudItem xs="12" md="6">
+			<MudTextField @bind-Value="cliente.Cif"
+						  Label="CIF / DNI"
+						  For="@(() => cliente.Cif)" />
+		</MudItem>
+
+		<MudItem xs="12" md="6">
+			<MudTextField @bind-Value="cliente.Telefono"
+						  Label="Teléfono"
+						  InputMode="InputMode.tel"
+						  For="@(() => cliente.Telefono)" />
+		</MudItem>
+
+		<MudItem xs="12" md="6">
+			<MudTextField @bind-Value="cliente.Email"
+						  Label="Email"
+						  For="@(() => cliente.Email)" />
+		</MudItem>
+
+		<MudItem xs="12" md="6">
+			<MudTextField @bind-Value="cliente.Poblacion"
+						  Label="Población"
+						  For="@(() => cliente.Poblacion)" />
+		</MudItem>
+
+		<MudItem xs="12">
+			<MudTextField @bind-Value="cliente.Direccion"
+						  Label="Dirección"
+						  For="@(() => cliente.Direccion)" />
+		</MudItem>
+
+		<MudItem xs="12">
+			<MudTextField @bind-Value="cliente.Observaciones"
+						  Label="Observaciones"
+						  Lines="3"
+						  For="@(() => cliente.Observaciones)" />
+		</MudItem>
+
+		<MudItem xs="12" Class="d-flex gap-2 justify-end">
+			<MudButton Variant="Variant.Text"
+					   Color="Color.Default"
+					   OnClick="Cancelar">
+				Cancelar
+			</MudButton>
+			<MudButton ButtonType="ButtonType.Submit"
+					   Variant="Variant.Filled"
+					   Color="Color.Primary">
+				Guardar
+			</MudButton>
+		</MudItem>
+	</MudGrid>
+</EditForm>
+@code {
+	private Cliente cliente = new();
+
+	private async Task GuardarAsync()
+	{
+		await ClienteSvc.CrearAsync(cliente);
+		Snackbar.Add($"Cliente '{cliente.Nombre}' creado", Severity.Success);
+		Nav.NavigateTo("/clientes");
+	}
+
+	private void Cancelar()
+	{
+		Nav.NavigateTo("/clientes");
+	}
+}

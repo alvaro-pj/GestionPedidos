@@ -3,6 +3,7 @@ using GestionPedidos.Data;
 using GestionPedidos.Models;
 using GestionPedidos.Services;
 using Microsoft.EntityFrameworkCore;
+using MudBlazor;
 using MudBlazor.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -10,8 +11,14 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
-builder.Services.AddMudServices();
-
+builder.Services.AddMudServices(config =>
+{
+    config.SnackbarConfiguration.PositionClass = Defaults.Classes.Position.BottomRight;
+    config.SnackbarConfiguration.VisibleStateDuration = 4000;      // 4 segundos
+    config.SnackbarConfiguration.HideTransitionDuration = 500;     // suave al desaparecer
+    config.SnackbarConfiguration.ShowTransitionDuration = 500;     // suave al aparecer
+    config.SnackbarConfiguration.ShowCloseIcon = true;             // X para cerrarlo manualmente
+});
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 
