@@ -1,0 +1,49 @@
+﻿@page "/clientes/editar/{Id:int}"
+@inject ClienteService ClienteSvc
+@inject NavigationManager Nav
+@inject ISnackbar Snackbar
+
+<PageTitle>Editar Cliente</PageTitle>
+
+<MudText Typo="Typo.h4" GutterBottom="true">Editar Cliente</MudText>
+
+@if(cliente == null)
+{
+	<MudProgressCircular Indeterminate="true" />
+}
+else
+{
+	<ClienteFormulario Cliente="cliente"
+					   TextoBotonGuardar="Actualizar"
+					   OnValidSubmit="GuardarAsync"
+					   OnCancel="Cancelar" />
+}
+
+@code{
+	[Parameter]
+	public int Id { get; set; }
+	private Cliente? cliente;
+
+	protected override async Task OnInitializedAsync()
+	{
+		cliente = await ClienteSvc.ObtenerPorIdAsync(Id);
+
+		if (cliente == null)
+		{
+			Snackbar.Add("Cliente no encontrado", Severity.Error);
+			Nav.NavigateTo("/clientes");
+		}
+	}
+
+	private async Task GuardarAsync(){
+		await ClienteSvc.ActualizarAsync(cliente!);
+		Snackbar.Add($"Cliente '{cliente!.Nombre}' actualizado", Severity.Success);
+		Nav.NavigateTo("/clientes");
+	}
+
+	private void Cancelar()
+	{
+		Nav.NavigateTo("/clientes");
+	}
+
+}

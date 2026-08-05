@@ -1,9 +1,7 @@
 ﻿@page "/clientes" 
-@using GestionPedidos.Data
-@using GestionPedidos.Models
-@using Microsoft.EntityFrameworkCore
-@using GestionPedidos.Services
 @inject ClienteService ClienteSvc
+@inject ISnackbar Snackbar
+@inject IDialogService DialogSvc
 
 <PageTitle>Clientes</PageTitle>
 
@@ -34,6 +32,7 @@ else
             <MudTh>CIF/DNI</MudTh>
             <MudTh>Teléfono</MudTh>
             <MudTh>Población</MudTh>
+            <MudTh Style="text-align:right">Acciones</MudTh>
         </HeaderContent>
         <RowTemplate>
             <MudTd DataLabel="Nombre">@cliente.Nombre</MudTd>
@@ -41,6 +40,16 @@ else
             <MudTd DataLabel="CIF/DNI">@cliente.Cif</MudTd>
             <MudTd DataLabel="Teléfono">@cliente.Telefono</MudTd>
             <MudTd DataLabel="Población">@cliente.Poblacion</MudTd>
+            <MudTd DataLabel="Acciones" Style="text-align:right">
+                <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                               Color="Color.Primary"
+                               Size="Size.Small"
+                               Href="@($"/clientes/editar/{cliente.Id}")" />
+                <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                               Color="Color.Error"
+                               Size="Size.Small"
+                               OnClick="@(() => ConfirmarDesactivarAsync(cliente))" />
+            </MudTd>
         </RowTemplate>
     </MudTable>
 }
@@ -50,6 +59,33 @@ else
 
     protected override async Task OnInitializedAsync()
     {
+        await RecargarClientesAsync();
+    }
+
+    private async Task RecargarClientesAsync()
+    {
         clientes = await ClienteSvc.ObtenerActivosAsync();
+    }
+
+    private async Task ConfirmarDesactivarAsync(Cliente cliente)
+    {
+        var parametros = new DialogParameters<ConfirmarDialogo>
+    {
+        { x => x.Titulo, "¿Desactivar cliente?" },
+        { x => x.Mensaje, $"El cliente '{cliente.Nombre}' se marcará como inactivo. Podrás recuperarlo más tarde." },
+        { x => x.TextoConfirmar, "Desactivar" }
+    };
+
+        var opciones = new DialogOptions { CloseOnEscapeKey = true };
+
+        var dialog = await DialogSvc.ShowAsync<ConfirmarDialogo>("Confirmar", parametros, opciones);
+        var resultado = await dialog.Result;
+
+        if (resultado is not null && !resultado.Canceled)
+        {
+            await ClienteSvc.DesactivarAsync(cliente.Id);
+            Snackbar.Add($"Cliente '{cliente.Nombre}' desactivado", Severity.Info);
+            await RecargarClientesAsync();
+        }
     }
 }

@@ -1,0 +1,95 @@
+﻿
+<EditForm Model="Cliente" OnValidSubmit="OnValidSubmitAsync">
+    <DataAnnotationsValidator />
+
+    <MudGrid>
+        <MudItem xs="12" md="8">
+            <MudTextField @bind-Value="Cliente.Nombre"
+                          Label="Nombre"
+                          Required="true"
+                          For="@(() => Cliente.Nombre)" />
+        </MudItem>
+
+        <MudItem xs="12" md="4">
+            <MudSelect T="TipoCliente"
+                       Value="Cliente.Tipo"
+                       ValueChanged="@((TipoCliente v) => Cliente.Tipo = v)"
+                       Label="Tipo"
+                       AnchorOrigin="Origin.BottomCenter">
+                <MudSelectItem T="TipoCliente" Value="TipoCliente.Empresa">Empresa</MudSelectItem>
+                <MudSelectItem T="TipoCliente" Value="TipoCliente.Particular">Particular</MudSelectItem>
+            </MudSelect>
+        </MudItem>
+
+        <MudItem xs="12" md="6">
+            <MudTextField @bind-Value="Cliente.Cif"
+                          Label="CIF / DNI"
+                          For="@(() => Cliente.Cif)" />
+        </MudItem>
+
+        <MudItem xs="12" md="6">
+            <MudTextField @bind-Value="Cliente.Telefono"
+                          Label="Teléfono"
+                          InputMode="InputMode.tel"
+                          For="@(() => Cliente.Telefono)" />
+        </MudItem>
+
+        <MudItem xs="12" md="6">
+            <MudTextField @bind-Value="Cliente.Email"
+                          Label="Email"
+                          For="@(() => Cliente.Email)" />
+        </MudItem>
+
+        <MudItem xs="12" md="6">
+            <MudTextField @bind-Value="Cliente.Poblacion"
+                          Label="Población"
+                          For="@(() => Cliente.Poblacion)" />
+        </MudItem>
+
+        <MudItem xs="12">
+            <MudTextField @bind-Value="Cliente.Direccion"
+                          Label="Dirección"
+                          For="@(() => Cliente.Direccion)" />
+        </MudItem>
+
+        <MudItem xs="12">
+            <MudTextField @bind-Value="Cliente.Observaciones"
+                          Label="Observaciones"
+                          Lines="3"
+                          For="@(() => Cliente.Observaciones)" />
+        </MudItem>
+
+        <MudItem xs="12" Class="d-flex gap-2 justify-end">
+            <MudButton Variant="Variant.Text"
+                       Color="Color.Default"
+                       OnClick="OnCancel">
+                Cancelar
+            </MudButton>
+            <MudButton ButtonType="ButtonType.Submit"
+                       Variant="Variant.Filled"
+                       Color="Color.Primary">
+                @TextoBotonGuardar
+            </MudButton>
+        </MudItem>
+    </MudGrid>
+</EditForm>
+
+@code {
+    [Parameter, EditorRequired]
+    public Cliente Cliente { get; set; } = null!;
+
+    [Parameter]
+    public string TextoBotonGuardar { get; set; } = "Guardar";
+
+    [Parameter]
+    public EventCallback OnValidSubmit { get; set; }
+
+    [Parameter]
+    public EventCallback OnCancel { get; set; }
+
+    private async Task OnValidSubmitAsync()
+    {
+        if (OnValidSubmit.HasDelegate)
+            await OnValidSubmit.InvokeAsync();
+    }
+}
