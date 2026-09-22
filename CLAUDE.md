@@ -72,6 +72,7 @@ Proveedor 1───N Compra 1───N LineaCompra
 - `LineaPedido` — cantidad, precio unitario en el momento de la venta.
 - `Compra` — cabecera (fecha, factura, proveedor) + líneas.
 - `LineaCompra` — concepto libre (no hay catálogo de productos de proveedor).
+- `Total` de `Pedido`/`Compra` **nunca se persiste**: es una propiedad `[NotMapped]` calculada como `Lineas.Sum(l => l.Subtotal)`. Evita el bug clásico de un total cacheado desincronizado de sus líneas.
 
 Se ha descartado deliberadamente: alérgenos, facturación con IVA, inventario/stock, autenticación (por ahora).
 
@@ -79,10 +80,24 @@ Se ha descartado deliberadamente: alérgenos, facturación con IVA, inventario/s
 
 - ✅ Fase 1: EF Core + SQLite + entidad `Cliente` + seeding + listado.
 - ✅ Fase 2: CRUD completo de `Cliente` (servicio, formulario compartido, alta, edición, baja lógica, diálogo de confirmación).
-- ⏳ Fase 3: `Proveedor` (mismo patrón).
-- ⏳ Fase 4: `Producto` (introducir `decimal` para precios).
-- ⏳ Fase 5: `Pedido` + `LineaPedido` (relaciones, formulario con líneas dinámicas).
-- ⏳ Fase 6: `Compra` + `LineaCompra`.
+- ✅ Fase 3: `Proveedor` (mismo patrón que Cliente).
+- ✅ Fase 4: `Producto` (con `decimal` para `PrecioBase`, `[Column(TypeName = "decimal(10,2)")]`).
+- ✅ Fase 5: `Pedido` + `LineaPedido` (maestro-detalle, `PedidoFormulario` con líneas dinámicas, `Total` calculado).
+- ✅ Fase 6: `Compra` + `LineaCompra` (mismo patrón, `Concepto` libre en vez de FK a Producto).
+- ✅ Rediseño de tema: `MudTheme` propio (paleta enterprise, IBM Plex Sans, toggle claro/oscuro) + migración de `MainLayout`/`NavMenu` a `MudLayout`/`MudAppBar`/`MudDrawer`/`MudNavMenu`.
+- ⏳ **Fase 7 (planificada, pendiente de empezar)**: ver bloque siguiente.
+
+## Fase 7 — Filtrado, fichas de detalle, estado de pago y dashboard (planificada)
+
+Propuesta hecha el 2026-09-22, pendiente de diseñar e implementar en la próxima sesión:
+
+1. **Filtrado en listados**: poder filtrar `Pedidos`/`Compras` por rango de fechas, y los listados de `Clientes`/`Proveedores`/`Pedidos` por texto (nombre, número de albarán/factura, etc.).
+2. **Ficha de detalle de Cliente**: página `/clientes/{id}` (distinta de editar) mostrando histórico de pedidos del cliente, total comprado acumulado, fecha del último pedido. Sirve para responder "¿quién me ha comprado más?".
+3. **Ficha de detalle de Proveedor**: análogo — histórico de compras, total gastado con ese proveedor, para responder "¿a quién le he comprado más?".
+4. **Estado de pago**: `Pedido` (y probablemente `Compra`) necesita poder marcarse como pagado/pendiente, para los casos en que no se cobra/paga en el momento. Hay que decidir: ¿un simple `bool Pagado`, o algo con fecha de pago / pagos parciales? Empezar simple (YAGNI) y ampliar si hace falta.
+5. **Página principal con dashboard**: sustituir el `Home.razor` actual (plantilla por defecto) por una página con gráficos/tarjetas: mejores clientes, mejores proveedores, pedidos pendientes de pago o de servir, etc. Hay que decidir qué librería de gráficos usar dentro del ecosistema MudBlazor (MudBlazor tiene componentes de chart propios — `MudChart` — evaluar si son suficientes antes de traer una librería externa).
+
+Antes de implementar esta fase, diseñar con calma (como se hizo con el maestro-detalle de Pedido): qué queries necesita cada ficha/gráfico, si hace falta algún índice en BBDD, y si el estado de pago requiere una migración sobre `Pedido`/`Compra` ya existentes.
 
 ## Convenciones de Git
 

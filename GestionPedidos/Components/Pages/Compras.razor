@@ -1,0 +1,89 @@
+@page "/compras"
+@inject CompraService CompraSvc
+@inject ISnackbar Snackbar
+@inject IDialogService DialogSvc
+
+<PageTitle>Compras</PageTitle>
+
+<MudText Typo="Typo.h4" GutterBottom="true">Compras</MudText>
+
+<MudButton Variant="Variant.Filled"
+           Color="Color.Primary"
+           StartIcon="@Icons.Material.Filled.Add"
+           Href="/compras/nuevo"
+           Class="mb-4">
+    Nueva compra
+</MudButton>
+
+@if (compras == null)
+{
+    <MudProgressCircular Indeterminate="true" />
+}
+else if (!compras.Any())
+{
+    <MudAlert Severity="Severity.Info">No hay compras todavía.</MudAlert>
+}
+else
+{
+    <MudTable Items="compras" Context="compra" Hover="true" Striped="true">
+        <HeaderContent>
+            <MudTh>Nº Factura</MudTh>
+            <MudTh>Fecha</MudTh>
+            <MudTh>Proveedor</MudTh>
+            <MudTh>Total</MudTh>
+            <MudTh Style="text-align:right">Acciones</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="Nº Factura">@compra.NumeroFactura</MudTd>
+            <MudTd DataLabel="Fecha">@compra.Fecha.ToString("dd/MM/yyyy")</MudTd>
+            <MudTd DataLabel="Proveedor">@compra.Proveedor.Nombre</MudTd>
+            <MudTd DataLabel="Total">@compra.Total.ToString("C")</MudTd>
+            <MudTd DataLabel="Acciones" Style="text-align:right">
+                <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                               Color="Color.Primary"
+                               Size="Size.Small"
+                               Href="@($"/compras/editar/{compra.Id}")" />
+                <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                               Color="Color.Error"
+                               Size="Size.Small"
+                               OnClick="@(() => ConfirmarDesactivarAsync(compra))" />
+            </MudTd>
+        </RowTemplate>
+    </MudTable>
+}
+
+@code {
+    private List<Compra>? compras;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await RecargarComprasAsync();
+    }
+
+    private async Task RecargarComprasAsync()
+    {
+        compras = await CompraSvc.ObtenerActivosAsync();
+    }
+
+    private async Task ConfirmarDesactivarAsync(Compra compra)
+    {
+        var parametros = new DialogParameters<ConfirmarDialogo>
+        {
+            { x => x.Titulo, "¿Desactivar compra?" },
+            { x => x.Mensaje, $"La compra se marcará como inactiva. Podrás recuperarla más tarde." },
+            { x => x.TextoConfirmar, "Desactivar" }
+        };
+
+        var opciones = new DialogOptions { CloseOnEscapeKey = true };
+
+        var dialog = await DialogSvc.ShowAsync<ConfirmarDialogo>("Confirmar", parametros, opciones);
+        var resultado = await dialog.Result;
+
+        if (resultado is not null && !resultado.Canceled)
+        {
+            await CompraSvc.DesactivarAsync(compra.Id);
+            Snackbar.Add("Compra desactivada", Severity.Info);
+            await RecargarComprasAsync();
+        }
+    }
+}

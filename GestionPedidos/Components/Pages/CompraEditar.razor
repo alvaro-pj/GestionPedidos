@@ -1,0 +1,49 @@
+@page "/compras/editar/{Id:int}"
+@inject CompraService CompraSvc
+@inject NavigationManager Nav
+@inject ISnackbar Snackbar
+
+<PageTitle>Editar Compra</PageTitle>
+
+<MudText Typo="Typo.h4" GutterBottom="true">Editar Compra</MudText>
+
+@if (compra == null)
+{
+    <MudProgressCircular Indeterminate="true" />
+}
+else
+{
+    <CompraFormulario Compra="compra"
+                      TextoBotonGuardar="Actualizar"
+                      OnValidSubmit="GuardarAsync"
+                      OnCancel="Cancelar" />
+}
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+    private Compra? compra;
+
+    protected override async Task OnInitializedAsync()
+    {
+        compra = await CompraSvc.ObtenerPorIdAsync(Id);
+
+        if (compra == null)
+        {
+            Snackbar.Add("Compra no encontrada", Severity.Error);
+            Nav.NavigateTo("/compras");
+        }
+    }
+
+    private async Task GuardarAsync()
+    {
+        await CompraSvc.ActualizarAsync(compra!);
+        Snackbar.Add("Compra actualizada", Severity.Success);
+        Nav.NavigateTo("/compras");
+    }
+
+    private void Cancelar()
+    {
+        Nav.NavigateTo("/compras");
+    }
+}

@@ -13,5 +13,7 @@ namespace GestionPedidos.Data
         public DbSet<Producto> Productos => Set<Producto>();
         public DbSet<Pedido> Pedidos => Set<Pedido>();
         public DbSet<LineaPedido> LineasPedido => Set<LineaPedido>();
+        public DbSet<Compra> Compras => Set<Compra>();
+        public DbSet<LineaCompra> LineasCompra => Set<LineaCompra>();
     }
 }

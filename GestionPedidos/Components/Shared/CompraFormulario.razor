@@ -1,0 +1,141 @@
+@inject ProveedorService ProveedorSvc
+
+<EditForm Model="Compra" OnValidSubmit="OnValidSubmitAsync">
+    <DataAnnotationsValidator />
+
+    <MudGrid>
+        <MudItem xs="12" md="4">
+            <MudTextField @bind-Value="Compra.NumeroFactura"
+                          Label="Número de factura"
+                          For="@(() => Compra.NumeroFactura)" />
+        </MudItem>
+
+        <MudItem xs="12" md="4">
+            <MudDatePicker @bind-Date="fechaSeleccionada"
+                           Label="Fecha" />
+        </MudItem>
+
+        <MudItem xs="12" md="4">
+            <MudSelect T="int" Value="Compra.ProveedorId"
+                       ValueChanged="@((int v) => Compra.ProveedorId = v)"
+                       Label="Proveedor"
+                       Required="true"
+                       AnchorOrigin="Origin.BottomCenter">
+                @foreach (var proveedor in proveedores)
+                {
+                    <MudSelectItem T="int" Value="proveedor.Id">@proveedor.Nombre</MudSelectItem>
+                }
+            </MudSelect>
+        </MudItem>
+
+        <MudItem xs="12">
+            <MudTextField @bind-Value="Compra.Observaciones"
+                          Label="Observaciones"
+                          Lines="2"
+                          For="@(() => Compra.Observaciones)" />
+        </MudItem>
+
+        <MudItem xs="12">
+            <MudText Typo="Typo.h6" Class="mb-2">Líneas</MudText>
+
+            <MudTable Items="Compra.Lineas" Hover="true" Context="linea">
+                <HeaderContent>
+                    <MudTh>Concepto</MudTh>
+                    <MudTh>Cantidad</MudTh>
+                    <MudTh>Precio unitario</MudTh>
+                    <MudTh>Subtotal</MudTh>
+                    <MudTh></MudTh>
+                </HeaderContent>
+                <RowTemplate Context="linea">
+                    <MudTd>
+                        <MudTextField @bind-Value="linea.Concepto" />
+                    </MudTd>
+                    <MudTd>
+                        <MudNumericField @bind-Value="linea.Cantidad" Format="F3" Min="0.001m" />
+                    </MudTd>
+                    <MudTd>
+                        <MudNumericField @bind-Value="linea.PrecioUnitario" Format="F2" Adornment="Adornment.End" AdornmentText="€" Min="0m" />
+                    </MudTd>
+                    <MudTd>@linea.Subtotal.ToString("C")</MudTd>
+                    <MudTd>
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                       Color="Color.Error"
+                                       Size="Size.Small"
+                                       OnClick="@(() => Compra.Lineas.Remove(linea))" />
+                    </MudTd>
+                </RowTemplate>
+            </MudTable>
+
+            <MudButton Variant="Variant.Text"
+                       Color="Color.Primary"
+                       StartIcon="@Icons.Material.Filled.Add"
+                       Class="mt-2"
+                       OnClick="AnadirLinea">
+                Añadir línea
+            </MudButton>
+
+            @if (!Compra.Lineas.Any())
+            {
+                <MudAlert Severity="Severity.Warning" Class="mt-2">La compra debe tener al menos una línea</MudAlert>
+            }
+        </MudItem>
+
+        <MudItem xs="12" Class="d-flex justify-end">
+            <MudText Typo="Typo.h6">Total: @Compra.Total.ToString("C")</MudText>
+        </MudItem>
+
+        <MudItem xs="12" Class="d-flex gap-2 justify-end">
+            <MudButton Variant="Variant.Text"
+                       Color="Color.Default"
+                       OnClick="OnCancel">
+                Cancelar
+            </MudButton>
+            <MudButton ButtonType="ButtonType.Submit"
+                       Variant="Variant.Filled"
+                       Color="Color.Primary">
+                @TextoBotonGuardar
+            </MudButton>
+        </MudItem>
+    </MudGrid>
+</EditForm>
+
+@code {
+    [Parameter, EditorRequired]
+    public Compra Compra { get; set; } = null!;
+
+    [Parameter]
+    public string TextoBotonGuardar { get; set; } = "Guardar";
+
+    [Parameter]
+    public EventCallback OnValidSubmit { get; set; }
+
+    [Parameter]
+    public EventCallback OnCancel { get; set; }
+
+    private List<Proveedor> proveedores = new();
+
+    private DateTime? fechaSeleccionada
+    {
+        get => Compra.Fecha;
+        set => Compra.Fecha = value ?? DateTime.Today;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        proveedores = await ProveedorSvc.ObtenerActivosAsync();
+    }
+
+    private void AnadirLinea()
+    {
+        Compra.Lineas.Add(new LineaCompra { Cantidad = 1 });
+    }
+
+    private async Task OnValidSubmitAsync()
+    {
+        if (!Compra.Lineas.Any())
+            return;
+
+        if (OnValidSubmit.HasDelegate)
+            await OnValidSubmit.InvokeAsync();
+    }
+}

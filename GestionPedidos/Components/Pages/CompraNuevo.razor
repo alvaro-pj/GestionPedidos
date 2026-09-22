@@ -1,0 +1,29 @@
+@page "/compras/nuevo"
+@inject CompraService CompraSvc
+@inject NavigationManager Nav
+@inject ISnackbar Snackbar
+
+<PageTitle>Nueva Compra</PageTitle>
+
+<MudText Typo="Typo.h4" GutterBottom="true">Nueva Compra</MudText>
+
+<CompraFormulario Compra="compra"
+                  TextoBotonGuardar="Guardar"
+                  OnValidSubmit="GuardarAsync"
+                  OnCancel="Cancelar" />
+
+@code {
+    private Compra compra = new();
+
+    private async Task GuardarAsync()
+    {
+        await CompraSvc.CrearAsync(compra);
+        Snackbar.Add("Compra creada", Severity.Success);
+        Nav.NavigateTo("/compras");
+    }
+
+    private void Cancelar()
+    {
+        Nav.NavigateTo("/compras");
+    }
+}

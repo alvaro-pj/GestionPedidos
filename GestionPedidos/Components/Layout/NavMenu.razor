@@ -1,50 +1,8 @@
-﻿<div class="top-row ps-3 navbar navbar-dark">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="">GestionPedidos</a>
-    </div>
-</div>
-
-<input type="checkbox" title="Navigation menu" class="navbar-toggler" />
-
-<div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
-    <nav class="nav flex-column">
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
-            </NavLink>
-        </div>
-
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="counter">
-                <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Counter
-            </NavLink>
-        </div>
-
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="weather">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Weather
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="clientes">
-                <span class="bi bi-people-fill-nav-menu" aria-hidden="true"></span> Clientes
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="proveedores">
-                <span class="bi bi-truck-nav-menu" aria-hidden="true"></span> Proveedores
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="productos">
-                <span class="bi bi-box-seam-nav-menu" aria-hidden="true"></span> Productos
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="pedidos">
-                <span class="bi bi-receipt-nav-menu" aria-hidden="true"></span> Pedidos
-            </NavLink>
-        </div>
-    </nav>
-</div>
-
+<MudNavMenu>
+    <MudNavLink Href="" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home">Home</MudNavLink>
+    <MudNavLink Href="clientes" Icon="@Icons.Material.Filled.People">Clientes</MudNavLink>
+    <MudNavLink Href="proveedores" Icon="@Icons.Material.Filled.LocalShipping">Proveedores</MudNavLink>
+    <MudNavLink Href="productos" Icon="@Icons.Material.Filled.Inventory2">Productos</MudNavLink>
+    <MudNavLink Href="pedidos" Icon="@Icons.Material.Filled.Receipt">Pedidos</MudNavLink>
+    <MudNavLink Href="compras" Icon="@Icons.Material.Filled.ShoppingCart">Compras</MudNavLink>
+</MudNavMenu>

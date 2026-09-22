@@ -1,28 +1,62 @@
-﻿@inherits LayoutComponentBase
+@inherits LayoutComponentBase
+@inject IJSRuntime JS
+@using GestionPedidos.Theme
 
-<MudThemeProvider />
+<MudThemeProvider Theme="AppTheme.Default" @bind-IsDarkMode="modoOscuro" />
 <MudPopoverProvider />
 <MudDialogProvider />
 <MudSnackbarProvider />
 
-<div class="page">
-    <div class="sidebar">
+<MudLayout>
+    <MudAppBar Elevation="1">
+        <MudIconButton Icon="@Icons.Material.Filled.Menu"
+                       Color="Color.Inherit"
+                       Edge="Edge.Start"
+                       OnClick="@(() => drawerAbierto = !drawerAbierto)" />
+        <MudText Typo="Typo.h6" Class="ml-3">GestionPedidos</MudText>
+        <MudSpacer />
+        <MudIconButton Icon="@(modoOscuro ? Icons.Material.Filled.LightMode : Icons.Material.Filled.DarkMode)"
+                       Color="Color.Inherit"
+                       OnClick="ToggleModoOscuroAsync" />
+    </MudAppBar>
+
+    <MudDrawer @bind-Open="drawerAbierto" Elevation="0" Variant="DrawerVariant.Responsive">
         <NavMenu />
-    </div>
+    </MudDrawer>
 
-    <main>
-        <div class="top-row px-4">
-            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
-        </div>
-
-        <article class="content px-4">
+    <MudMainContent>
+        <MudContainer MaxWidth="MaxWidth.Large" Class="my-6">
             @Body
-        </article>
-    </main>
-</div>
+        </MudContainer>
+    </MudMainContent>
+</MudLayout>
 
 <div id="blazor-error-ui" data-nosnippet>
     An unhandled error has occurred.
     <a href="." class="reload">Reload</a>
     <span class="dismiss">🗙</span>
 </div>
+
+@code {
+    private bool drawerAbierto = true;
+    private bool modoOscuro;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var preferencia = await JS.InvokeAsync<string?>("localStorage.getItem", "modoOscuro");
+            if (preferencia is not null)
+            {
+                modoOscuro = preferencia == "true";
+                StateHasChanged();
+            }
+        }
+    }
+
+    private async Task ToggleModoOscuroAsync()
+    {
+        modoOscuro = !modoOscuro;
+        await JS.InvokeVoidAsync("localStorage.setItem", "modoOscuro", modoOscuro.ToString().ToLower());
+    }
+}
