@@ -1,0 +1,49 @@
+@page "/productos/editar/{Id:int}"
+@inject ProductoService ProductoSvc
+@inject NavigationManager Nav
+@inject ISnackbar Snackbar
+
+<PageTitle>Editar Producto</PageTitle>
+
+<MudText Typo="Typo.h4" GutterBottom="true">Editar Producto</MudText>
+
+@if (producto == null)
+{
+    <MudProgressCircular Indeterminate="true" />
+}
+else
+{
+    <ProductoFormulario Producto="producto"
+                        TextoBotonGuardar="Actualizar"
+                        OnValidSubmit="GuardarAsync"
+                        OnCancel="Cancelar" />
+}
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+    private Producto? producto;
+
+    protected override async Task OnInitializedAsync()
+    {
+        producto = await ProductoSvc.ObtenerPorIdAsync(Id);
+
+        if (producto == null)
+        {
+            Snackbar.Add("Producto no encontrado", Severity.Error);
+            Nav.NavigateTo("/productos");
+        }
+    }
+
+    private async Task GuardarAsync()
+    {
+        await ProductoSvc.ActualizarAsync(producto!);
+        Snackbar.Add($"Producto '{producto!.Nombre}' actualizado", Severity.Success);
+        Nav.NavigateTo("/productos");
+    }
+
+    private void Cancelar()
+    {
+        Nav.NavigateTo("/productos");
+    }
+}

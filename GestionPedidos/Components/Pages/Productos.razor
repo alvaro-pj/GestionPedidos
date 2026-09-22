@@ -1,0 +1,87 @@
+@page "/productos"
+@inject ProductoService ProductoSvc
+@inject ISnackbar Snackbar
+@inject IDialogService DialogSvc
+
+<PageTitle>Productos</PageTitle>
+
+<MudText Typo="Typo.h4" GutterBottom="true">Productos</MudText>
+
+<MudButton Variant="Variant.Filled"
+           Color="Color.Primary"
+           StartIcon="@Icons.Material.Filled.Add"
+           Href="/productos/nuevo"
+           Class="mb-4">
+    Nuevo producto
+</MudButton>
+
+@if (productos == null)
+{
+    <MudProgressCircular Indeterminate="true" />
+}
+else if (!productos.Any())
+{
+    <MudAlert Severity="Severity.Info">No hay productos todavía.</MudAlert>
+}
+else
+{
+    <MudTable Items="productos" Context="producto" Hover="true" Striped="true">
+        <HeaderContent>
+            <MudTh>Nombre</MudTh>
+            <MudTh>Precio base</MudTh>
+            <MudTh>Descripción</MudTh>
+            <MudTh Style="text-align:right">Acciones</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="Nombre">@producto.Nombre</MudTd>
+            <MudTd DataLabel="Precio base">@producto.PrecioBase.ToString("C")</MudTd>
+            <MudTd DataLabel="Descripción">@producto.Descripcion</MudTd>
+            <MudTd DataLabel="Acciones" Style="text-align:right">
+                <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                               Color="Color.Primary"
+                               Size="Size.Small"
+                               Href="@($"/productos/editar/{producto.Id}")" />
+                <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                               Color="Color.Error"
+                               Size="Size.Small"
+                               OnClick="@(() => ConfirmarDesactivarAsync(producto))" />
+            </MudTd>
+        </RowTemplate>
+    </MudTable>
+}
+
+@code {
+    private List<Producto>? productos;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await RecargarProductosAsync();
+    }
+
+    private async Task RecargarProductosAsync()
+    {
+        productos = await ProductoSvc.ObtenerActivosAsync();
+    }
+
+    private async Task ConfirmarDesactivarAsync(Producto producto)
+    {
+        var parametros = new DialogParameters<ConfirmarDialogo>
+        {
+            { x => x.Titulo, "¿Desactivar producto?" },
+            { x => x.Mensaje, $"El producto '{producto.Nombre}' se marcará como inactivo. Podrás recuperarlo más tarde." },
+            { x => x.TextoConfirmar, "Desactivar" }
+        };
+
+        var opciones = new DialogOptions { CloseOnEscapeKey = true };
+
+        var dialog = await DialogSvc.ShowAsync<ConfirmarDialogo>("Confirmar", parametros, opciones);
+        var resultado = await dialog.Result;
+
+        if (resultado is not null && !resultado.Canceled)
+        {
+            await ProductoSvc.DesactivarAsync(producto.Id);
+            Snackbar.Add($"Producto '{producto.Nombre}' desactivado", Severity.Info);
+            await RecargarProductosAsync();
+        }
+    }
+}

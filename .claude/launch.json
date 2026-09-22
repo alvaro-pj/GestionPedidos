@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "GestionPedidos",
+      "runtimeExecutable": "dotnet",
+      "runtimeArgs": ["run", "--project", "GestionPedidos", "--urls", "http://localhost:5102"],
+      "port": 5102
+    }
+  ]
+}

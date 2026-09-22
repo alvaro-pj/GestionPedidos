@@ -1,0 +1,29 @@
+@page "/productos/nuevo"
+@inject ProductoService ProductoSvc
+@inject NavigationManager Nav
+@inject ISnackbar Snackbar
+
+<PageTitle>Nuevo Producto</PageTitle>
+
+<MudText Typo="Typo.h4" GutterBottom="true">Nuevo Producto</MudText>
+
+<ProductoFormulario Producto="producto"
+                    TextoBotonGuardar="Guardar"
+                    OnValidSubmit="GuardarAsync"
+                    OnCancel="Cancelar" />
+
+@code {
+    private Producto producto = new();
+
+    private async Task GuardarAsync()
+    {
+        await ProductoSvc.CrearAsync(producto);
+        Snackbar.Add($"Producto '{producto.Nombre}' creado", Severity.Success);
+        Nav.NavigateTo("/productos");
+    }
+
+    private void Cancelar()
+    {
+        Nav.NavigateTo("/productos");
+    }
+}
