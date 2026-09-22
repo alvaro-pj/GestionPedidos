@@ -1,0 +1,29 @@
+@page "/proveedores/nuevo"
+@inject ProveedorService ProveedorSvc
+@inject NavigationManager Nav
+@inject ISnackbar Snackbar
+
+<PageTitle>Nuevo Proveedor</PageTitle>
+
+<MudText Typo="Typo.h4" GutterBottom="true">Nuevo Proveedor</MudText>
+
+<ProveedorFormulario Proveedor="proveedor"
+                     TextoBotonGuardar="Guardar"
+                     OnValidSubmit="GuardarAsync"
+                     OnCancel="Cancelar" />
+
+@code {
+    private Proveedor proveedor = new();
+
+    private async Task GuardarAsync()
+    {
+        await ProveedorSvc.CrearAsync(proveedor);
+        Snackbar.Add($"Proveedor '{proveedor.Nombre}' creado", Severity.Success);
+        Nav.NavigateTo("/proveedores");
+    }
+
+    private void Cancelar()
+    {
+        Nav.NavigateTo("/proveedores");
+    }
+}

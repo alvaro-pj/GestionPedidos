@@ -9,5 +9,6 @@ namespace GestionPedidos.Data
         {
         }
         public DbSet<Cliente> Clientes => Set<Cliente>();
+        public DbSet<Proveedor> Proveedores => Set<Proveedor>();
     }
 }

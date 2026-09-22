@@ -1,0 +1,49 @@
+@page "/proveedores/editar/{Id:int}"
+@inject ProveedorService ProveedorSvc
+@inject NavigationManager Nav
+@inject ISnackbar Snackbar
+
+<PageTitle>Editar Proveedor</PageTitle>
+
+<MudText Typo="Typo.h4" GutterBottom="true">Editar Proveedor</MudText>
+
+@if (proveedor == null)
+{
+    <MudProgressCircular Indeterminate="true" />
+}
+else
+{
+    <ProveedorFormulario Proveedor="proveedor"
+                         TextoBotonGuardar="Actualizar"
+                         OnValidSubmit="GuardarAsync"
+                         OnCancel="Cancelar" />
+}
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+    private Proveedor? proveedor;
+
+    protected override async Task OnInitializedAsync()
+    {
+        proveedor = await ProveedorSvc.ObtenerPorIdAsync(Id);
+
+        if (proveedor == null)
+        {
+            Snackbar.Add("Proveedor no encontrado", Severity.Error);
+            Nav.NavigateTo("/proveedores");
+        }
+    }
+
+    private async Task GuardarAsync()
+    {
+        await ProveedorSvc.ActualizarAsync(proveedor!);
+        Snackbar.Add($"Proveedor '{proveedor!.Nombre}' actualizado", Severity.Success);
+        Nav.NavigateTo("/proveedores");
+    }
+
+    private void Cancelar()
+    {
+        Nav.NavigateTo("/proveedores");
+    }
+}

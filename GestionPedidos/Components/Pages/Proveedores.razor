@@ -1,0 +1,89 @@
+@page "/proveedores"
+@inject ProveedorService ProveedorSvc
+@inject ISnackbar Snackbar
+@inject IDialogService DialogSvc
+
+<PageTitle>Proveedores</PageTitle>
+
+<MudText Typo="Typo.h4" GutterBottom="true">Proveedores</MudText>
+
+<MudButton Variant="Variant.Filled"
+           Color="Color.Primary"
+           StartIcon="@Icons.Material.Filled.Add"
+           Href="/proveedores/nuevo"
+           Class="mb-4">
+    Nuevo proveedor
+</MudButton>
+
+@if (proveedores == null)
+{
+    <MudProgressCircular Indeterminate="true" />
+}
+else if (!proveedores.Any())
+{
+    <MudAlert Severity="Severity.Info">No hay proveedores todavía.</MudAlert>
+}
+else
+{
+    <MudTable Items="proveedores" Context="proveedor" Hover="true" Striped="true">
+        <HeaderContent>
+            <MudTh>Nombre</MudTh>
+            <MudTh>CIF</MudTh>
+            <MudTh>Teléfono</MudTh>
+            <MudTh>Población</MudTh>
+            <MudTh Style="text-align:right">Acciones</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="Nombre">@proveedor.Nombre</MudTd>
+            <MudTd DataLabel="CIF">@proveedor.Cif</MudTd>
+            <MudTd DataLabel="Teléfono">@proveedor.Telefono</MudTd>
+            <MudTd DataLabel="Población">@proveedor.Poblacion</MudTd>
+            <MudTd DataLabel="Acciones" Style="text-align:right">
+                <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                               Color="Color.Primary"
+                               Size="Size.Small"
+                               Href="@($"/proveedores/editar/{proveedor.Id}")" />
+                <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                               Color="Color.Error"
+                               Size="Size.Small"
+                               OnClick="@(() => ConfirmarDesactivarAsync(proveedor))" />
+            </MudTd>
+        </RowTemplate>
+    </MudTable>
+}
+
+@code {
+    private List<Proveedor>? proveedores;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await RecargarProveedoresAsync();
+    }
+
+    private async Task RecargarProveedoresAsync()
+    {
+        proveedores = await ProveedorSvc.ObtenerActivosAsync();
+    }
+
+    private async Task ConfirmarDesactivarAsync(Proveedor proveedor)
+    {
+        var parametros = new DialogParameters<ConfirmarDialogo>
+        {
+            { x => x.Titulo, "¿Desactivar proveedor?" },
+            { x => x.Mensaje, $"El proveedor '{proveedor.Nombre}' se marcará como inactivo. Podrás recuperarlo más tarde." },
+            { x => x.TextoConfirmar, "Desactivar" }
+        };
+
+        var opciones = new DialogOptions { CloseOnEscapeKey = true };
+
+        var dialog = await DialogSvc.ShowAsync<ConfirmarDialogo>("Confirmar", parametros, opciones);
+        var resultado = await dialog.Result;
+
+        if (resultado is not null && !resultado.Canceled)
+        {
+            await ProveedorSvc.DesactivarAsync(proveedor.Id);
+            Snackbar.Add($"Proveedor '{proveedor.Nombre}' desactivado", Severity.Info);
+            await RecargarProveedoresAsync();
+        }
+    }
+}

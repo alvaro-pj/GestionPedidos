@@ -1,0 +1,83 @@
+<EditForm Model="Proveedor" OnValidSubmit="OnValidSubmitAsync">
+    <DataAnnotationsValidator />
+
+    <MudGrid>
+        <MudItem xs="12" md="8">
+            <MudTextField @bind-Value="Proveedor.Nombre"
+                          Label="Nombre"
+                          Required="true"
+                          For="@(() => Proveedor.Nombre)" />
+        </MudItem>
+
+        <MudItem xs="12" md="4">
+            <MudTextField @bind-Value="Proveedor.Cif"
+                          Label="CIF"
+                          For="@(() => Proveedor.Cif)" />
+        </MudItem>
+
+        <MudItem xs="12" md="6">
+            <MudTextField @bind-Value="Proveedor.Telefono"
+                          Label="Teléfono"
+                          InputMode="InputMode.tel"
+                          For="@(() => Proveedor.Telefono)" />
+        </MudItem>
+
+        <MudItem xs="12" md="6">
+            <MudTextField @bind-Value="Proveedor.Email"
+                          Label="Email"
+                          For="@(() => Proveedor.Email)" />
+        </MudItem>
+
+        <MudItem xs="12" md="6">
+            <MudTextField @bind-Value="Proveedor.Poblacion"
+                          Label="Población"
+                          For="@(() => Proveedor.Poblacion)" />
+        </MudItem>
+
+        <MudItem xs="12">
+            <MudTextField @bind-Value="Proveedor.Direccion"
+                          Label="Dirección"
+                          For="@(() => Proveedor.Direccion)" />
+        </MudItem>
+
+        <MudItem xs="12">
+            <MudTextField @bind-Value="Proveedor.Observaciones"
+                          Label="Observaciones"
+                          Lines="3"
+                          For="@(() => Proveedor.Observaciones)" />
+        </MudItem>
+
+        <MudItem xs="12" Class="d-flex gap-2 justify-end">
+            <MudButton Variant="Variant.Text"
+                       Color="Color.Default"
+                       OnClick="OnCancel">
+                Cancelar
+            </MudButton>
+            <MudButton ButtonType="ButtonType.Submit"
+                       Variant="Variant.Filled"
+                       Color="Color.Primary">
+                @TextoBotonGuardar
+            </MudButton>
+        </MudItem>
+    </MudGrid>
+</EditForm>
+
+@code {
+    [Parameter, EditorRequired]
+    public Proveedor Proveedor { get; set; } = null!;
+
+    [Parameter]
+    public string TextoBotonGuardar { get; set; } = "Guardar";
+
+    [Parameter]
+    public EventCallback OnValidSubmit { get; set; }
+
+    [Parameter]
+    public EventCallback OnCancel { get; set; }
+
+    private async Task OnValidSubmitAsync()
+    {
+        if (OnValidSubmit.HasDelegate)
+            await OnValidSubmit.InvokeAsync();
+    }
+}
