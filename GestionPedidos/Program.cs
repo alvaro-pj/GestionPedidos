@@ -25,6 +25,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 builder.Services.AddScoped<ClienteService>();
 builder.Services.AddScoped<ProveedorService>();
 builder.Services.AddScoped<ProductoService>();
+builder.Services.AddScoped<PedidoService>();
 
 var app = builder.Build();
 

@@ -1,0 +1,162 @@
+@inject ClienteService ClienteSvc
+@inject ProductoService ProductoSvc
+
+<EditForm Model="Pedido" OnValidSubmit="OnValidSubmitAsync">
+    <DataAnnotationsValidator />
+
+    <MudGrid>
+        <MudItem xs="12" md="4">
+            <MudTextField @bind-Value="Pedido.NumeroAlbaran"
+                          Label="Número de albarán"
+                          Required="true"
+                          For="@(() => Pedido.NumeroAlbaran)" />
+        </MudItem>
+
+        <MudItem xs="12" md="4">
+            <MudDatePicker @bind-Date="fechaSeleccionada"
+                           Label="Fecha" />
+        </MudItem>
+
+        <MudItem xs="12" md="4">
+            <MudSelect T="int" Value="Pedido.ClienteId"
+                       ValueChanged="@((int v) => Pedido.ClienteId = v)"
+                       Label="Cliente"
+                       Required="true"
+                       AnchorOrigin="Origin.BottomCenter">
+                @foreach (var cliente in clientes)
+                {
+                    <MudSelectItem T="int" Value="cliente.Id">@cliente.Nombre</MudSelectItem>
+                }
+            </MudSelect>
+        </MudItem>
+
+        <MudItem xs="12">
+            <MudTextField @bind-Value="Pedido.Observaciones"
+                          Label="Observaciones"
+                          Lines="2"
+                          For="@(() => Pedido.Observaciones)" />
+        </MudItem>
+
+        <MudItem xs="12">
+            <MudText Typo="Typo.h6" Class="mb-2">Líneas</MudText>
+
+            <MudTable Items="Pedido.Lineas" Hover="true" Context="linea">
+                <HeaderContent>
+                    <MudTh>Producto</MudTh>
+                    <MudTh>Cantidad</MudTh>
+                    <MudTh>Precio unitario</MudTh>
+                    <MudTh>Subtotal</MudTh>
+                    <MudTh></MudTh>
+                </HeaderContent>
+                <RowTemplate Context="linea">
+                    <MudTd>
+                        <MudSelect T="int" Value="linea.ProductoId"
+                                   ValueChanged="@((int v) => SeleccionarProducto(linea, v))"
+                                   AnchorOrigin="Origin.BottomCenter">
+                            @foreach (var producto in productos)
+                            {
+                                <MudSelectItem T="int" Value="producto.Id">@producto.Nombre</MudSelectItem>
+                            }
+                        </MudSelect>
+                    </MudTd>
+                    <MudTd>
+                        <MudNumericField @bind-Value="linea.Cantidad" Format="F3" Min="0.001m" />
+                    </MudTd>
+                    <MudTd>
+                        <MudNumericField @bind-Value="linea.PrecioUnitario" Format="F2" Adornment="Adornment.End" AdornmentText="€" Min="0m" />
+                    </MudTd>
+                    <MudTd>@linea.Subtotal.ToString("C")</MudTd>
+                    <MudTd>
+                        <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                                       Color="Color.Error"
+                                       Size="Size.Small"
+                                       OnClick="@(() => Pedido.Lineas.Remove(linea))" />
+                    </MudTd>
+                </RowTemplate>
+            </MudTable>
+
+            <MudButton Variant="Variant.Text"
+                       Color="Color.Primary"
+                       StartIcon="@Icons.Material.Filled.Add"
+                       Class="mt-2"
+                       OnClick="AnadirLinea">
+                Añadir línea
+            </MudButton>
+
+            @if (!Pedido.Lineas.Any())
+            {
+                <MudAlert Severity="Severity.Warning" Class="mt-2">El pedido debe tener al menos una línea</MudAlert>
+            }
+        </MudItem>
+
+        <MudItem xs="12" Class="d-flex justify-end">
+            <MudText Typo="Typo.h6">Total: @Pedido.Total.ToString("C")</MudText>
+        </MudItem>
+
+        <MudItem xs="12" Class="d-flex gap-2 justify-end">
+            <MudButton Variant="Variant.Text"
+                       Color="Color.Default"
+                       OnClick="OnCancel">
+                Cancelar
+            </MudButton>
+            <MudButton ButtonType="ButtonType.Submit"
+                       Variant="Variant.Filled"
+                       Color="Color.Primary">
+                @TextoBotonGuardar
+            </MudButton>
+        </MudItem>
+    </MudGrid>
+</EditForm>
+
+@code {
+    [Parameter, EditorRequired]
+    public Pedido Pedido { get; set; } = null!;
+
+    [Parameter]
+    public string TextoBotonGuardar { get; set; } = "Guardar";
+
+    [Parameter]
+    public EventCallback OnValidSubmit { get; set; }
+
+    [Parameter]
+    public EventCallback OnCancel { get; set; }
+
+    private List<Cliente> clientes = new();
+    private List<Producto> productos = new();
+
+    private DateTime? fechaSeleccionada
+    {
+        get => Pedido.Fecha;
+        set => Pedido.Fecha = value ?? DateTime.Today;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        clientes = await ClienteSvc.ObtenerActivosAsync();
+        productos = await ProductoSvc.ObtenerActivosAsync();
+    }
+
+    private void AnadirLinea()
+    {
+        Pedido.Lineas.Add(new LineaPedido { Cantidad = 1 });
+    }
+
+    private void SeleccionarProducto(LineaPedido linea, int productoId)
+    {
+        linea.ProductoId = productoId;
+        var producto = productos.FirstOrDefault(p => p.Id == productoId);
+        if (producto != null)
+        {
+            linea.PrecioUnitario = producto.PrecioBase;
+        }
+    }
+
+    private async Task OnValidSubmitAsync()
+    {
+        if (!Pedido.Lineas.Any())
+            return;
+
+        if (OnValidSubmit.HasDelegate)
+            await OnValidSubmit.InvokeAsync();
+    }
+}

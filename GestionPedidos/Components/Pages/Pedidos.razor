@@ -1,0 +1,89 @@
+@page "/pedidos"
+@inject PedidoService PedidoSvc
+@inject ISnackbar Snackbar
+@inject IDialogService DialogSvc
+
+<PageTitle>Pedidos</PageTitle>
+
+<MudText Typo="Typo.h4" GutterBottom="true">Pedidos</MudText>
+
+<MudButton Variant="Variant.Filled"
+           Color="Color.Primary"
+           StartIcon="@Icons.Material.Filled.Add"
+           Href="/pedidos/nuevo"
+           Class="mb-4">
+    Nuevo pedido
+</MudButton>
+
+@if (pedidos == null)
+{
+    <MudProgressCircular Indeterminate="true" />
+}
+else if (!pedidos.Any())
+{
+    <MudAlert Severity="Severity.Info">No hay pedidos todavía.</MudAlert>
+}
+else
+{
+    <MudTable Items="pedidos" Context="pedido" Hover="true" Striped="true">
+        <HeaderContent>
+            <MudTh>Nº Albarán</MudTh>
+            <MudTh>Fecha</MudTh>
+            <MudTh>Cliente</MudTh>
+            <MudTh>Total</MudTh>
+            <MudTh Style="text-align:right">Acciones</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="Nº Albarán">@pedido.NumeroAlbaran</MudTd>
+            <MudTd DataLabel="Fecha">@pedido.Fecha.ToString("dd/MM/yyyy")</MudTd>
+            <MudTd DataLabel="Cliente">@pedido.Cliente.Nombre</MudTd>
+            <MudTd DataLabel="Total">@pedido.Total.ToString("C")</MudTd>
+            <MudTd DataLabel="Acciones" Style="text-align:right">
+                <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                               Color="Color.Primary"
+                               Size="Size.Small"
+                               Href="@($"/pedidos/editar/{pedido.Id}")" />
+                <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                               Color="Color.Error"
+                               Size="Size.Small"
+                               OnClick="@(() => ConfirmarDesactivarAsync(pedido))" />
+            </MudTd>
+        </RowTemplate>
+    </MudTable>
+}
+
+@code {
+    private List<Pedido>? pedidos;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await RecargarPedidosAsync();
+    }
+
+    private async Task RecargarPedidosAsync()
+    {
+        pedidos = await PedidoSvc.ObtenerActivosAsync();
+    }
+
+    private async Task ConfirmarDesactivarAsync(Pedido pedido)
+    {
+        var parametros = new DialogParameters<ConfirmarDialogo>
+        {
+            { x => x.Titulo, "¿Desactivar pedido?" },
+            { x => x.Mensaje, $"El pedido '{pedido.NumeroAlbaran}' se marcará como inactivo. Podrás recuperarlo más tarde." },
+            { x => x.TextoConfirmar, "Desactivar" }
+        };
+
+        var opciones = new DialogOptions { CloseOnEscapeKey = true };
+
+        var dialog = await DialogSvc.ShowAsync<ConfirmarDialogo>("Confirmar", parametros, opciones);
+        var resultado = await dialog.Result;
+
+        if (resultado is not null && !resultado.Canceled)
+        {
+            await PedidoSvc.DesactivarAsync(pedido.Id);
+            Snackbar.Add($"Pedido '{pedido.NumeroAlbaran}' desactivado", Severity.Info);
+            await RecargarPedidosAsync();
+        }
+    }
+}

@@ -1,0 +1,29 @@
+@page "/pedidos/nuevo"
+@inject PedidoService PedidoSvc
+@inject NavigationManager Nav
+@inject ISnackbar Snackbar
+
+<PageTitle>Nuevo Pedido</PageTitle>
+
+<MudText Typo="Typo.h4" GutterBottom="true">Nuevo Pedido</MudText>
+
+<PedidoFormulario Pedido="pedido"
+                  TextoBotonGuardar="Guardar"
+                  OnValidSubmit="GuardarAsync"
+                  OnCancel="Cancelar" />
+
+@code {
+    private Pedido pedido = new();
+
+    private async Task GuardarAsync()
+    {
+        await PedidoSvc.CrearAsync(pedido);
+        Snackbar.Add($"Pedido '{pedido.NumeroAlbaran}' creado", Severity.Success);
+        Nav.NavigateTo("/pedidos");
+    }
+
+    private void Cancelar()
+    {
+        Nav.NavigateTo("/pedidos");
+    }
+}

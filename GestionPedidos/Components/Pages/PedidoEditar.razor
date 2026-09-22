@@ -1,0 +1,49 @@
+@page "/pedidos/editar/{Id:int}"
+@inject PedidoService PedidoSvc
+@inject NavigationManager Nav
+@inject ISnackbar Snackbar
+
+<PageTitle>Editar Pedido</PageTitle>
+
+<MudText Typo="Typo.h4" GutterBottom="true">Editar Pedido</MudText>
+
+@if (pedido == null)
+{
+    <MudProgressCircular Indeterminate="true" />
+}
+else
+{
+    <PedidoFormulario Pedido="pedido"
+                      TextoBotonGuardar="Actualizar"
+                      OnValidSubmit="GuardarAsync"
+                      OnCancel="Cancelar" />
+}
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+    private Pedido? pedido;
+
+    protected override async Task OnInitializedAsync()
+    {
+        pedido = await PedidoSvc.ObtenerPorIdAsync(Id);
+
+        if (pedido == null)
+        {
+            Snackbar.Add("Pedido no encontrado", Severity.Error);
+            Nav.NavigateTo("/pedidos");
+        }
+    }
+
+    private async Task GuardarAsync()
+    {
+        await PedidoSvc.ActualizarAsync(pedido!);
+        Snackbar.Add($"Pedido '{pedido!.NumeroAlbaran}' actualizado", Severity.Success);
+        Nav.NavigateTo("/pedidos");
+    }
+
+    private void Cancelar()
+    {
+        Nav.NavigateTo("/pedidos");
+    }
+}
